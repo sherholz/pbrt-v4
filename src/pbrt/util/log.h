@@ -96,8 +96,8 @@ extern __constant__ LogLevel LOGGING_LogLevelGPU;
 namespace pbrt {
 
 template <typename... Args>
-inline void Log(LogLevel level, const char *file, int line, const char *fmt,
-                Args &&...args) {
+PBRT_CPU_GPU inline void Log(LogLevel level, const char *file, int line, const char *fmt,
+                             Args &&...args) {
 #ifdef PBRT_IS_GPU_CODE
     Log(level, file, line, fmt);  // just the format string #yolo
 #else
@@ -107,8 +107,8 @@ inline void Log(LogLevel level, const char *file, int line, const char *fmt,
 }
 
 template <typename... Args>
-inline void LogFatal(LogLevel level, const char *file, int line, const char *fmt,
-                     Args &&...args) {
+PBRT_CPU_GPU inline void LogFatal(LogLevel level, const char *file, int line,
+                                  const char *fmt, Args &&...args) {
 #ifdef PBRT_IS_GPU_CODE
     LogFatal(level, file, line, fmt);  // just the format string #yolo
 #else
