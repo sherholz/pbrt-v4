@@ -359,7 +359,7 @@ std::string FBmTexture::ToString() const {
 PBRT_CPU_GPU SampledSpectrum SpectrumImageTexture::Evaluate(TextureEvalContext ctx,
                                                SampledWavelengths lambda) const {
 #ifdef PBRT_IS_GPU_CODE
-    assert(!"Should not be called in GPU code");
+    CHECK(!"Should not be called in GPU code");
     return SampledSpectrum(0);
 #else
     // Apply texture mapping and flip $t$ coordinate for image texture lookup

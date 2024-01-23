@@ -578,7 +578,7 @@ class FloatImageTexture : public ImageTextureBase {
     PBRT_CPU_GPU
     Float Evaluate(TextureEvalContext ctx) const {
 #ifdef PBRT_IS_GPU_CODE
-        assert(!"Should not be called in GPU code");
+	    CHECK(!"Should not be called in GPU code");
         return 0;
 #else
         TexCoord2D c = mapping.Map(ctx);
