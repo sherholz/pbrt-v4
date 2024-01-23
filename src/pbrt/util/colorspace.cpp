@@ -12,10 +12,10 @@
 namespace pbrt {
 
 #ifdef PBRT_BUILD_GPU_RENDERER
-PBRT_CONST RGBColorSpace *RGBColorSpace_sRGB;
-PBRT_CONST RGBColorSpace *RGBColorSpace_DCI_P3;
-PBRT_CONST RGBColorSpace *RGBColorSpace_Rec2020;
-PBRT_CONST RGBColorSpace *RGBColorSpace_ACES2065_1;
+PBRT_GPU __constant__ RGBColorSpace *RGBColorSpace_sRGB;
+PBRT_GPU __constant__ RGBColorSpace *RGBColorSpace_DCI_P3;
+PBRT_GPU __constant__ RGBColorSpace *RGBColorSpace_Rec2020;
+PBRT_GPU __constant__ RGBColorSpace *RGBColorSpace_ACES2065_1;
 #endif
 
 // RGBColorSpace Method Definitions
@@ -96,15 +96,18 @@ void RGBColorSpace::Init(Allocator alloc) {
         GetNamedSpectrum("illum-acesD60"), RGBToSpectrumTable::ACES2065_1, alloc);
 #ifdef PBRT_BUILD_GPU_RENDERER
     if (Options->useGPU) {
-        CUDA_CHECK(cudaMemcpyToSymbol(RGBColorSpace_sRGB, &RGBColorSpace::sRGB,
-                                      sizeof(RGBColorSpace_sRGB)));
-        CUDA_CHECK(cudaMemcpyToSymbol(RGBColorSpace_DCI_P3, &RGBColorSpace::DCI_P3,
-                                      sizeof(RGBColorSpace_DCI_P3)));
-        CUDA_CHECK(cudaMemcpyToSymbol(RGBColorSpace_Rec2020, &RGBColorSpace::Rec2020,
-                                      sizeof(RGBColorSpace_Rec2020)));
-        CUDA_CHECK(cudaMemcpyToSymbol(RGBColorSpace_ACES2065_1,
-                                      &RGBColorSpace::ACES2065_1,
-                                      sizeof(RGBColorSpace_ACES2065_1)));
+        CUDA_CHECK(hipMemcpyToSymbol((const void *)&RGBColorSpace_sRGB,
+                                     (const void *)&RGBColorSpace::sRGB,
+                                     sizeof(RGBColorSpace_sRGB)));
+        CUDA_CHECK(hipMemcpyToSymbol((const void *)&RGBColorSpace_DCI_P3,
+                                     (const void *)&RGBColorSpace::DCI_P3,
+                                     sizeof(RGBColorSpace_DCI_P3)));
+        CUDA_CHECK(hipMemcpyToSymbol((const void *)&RGBColorSpace_Rec2020,
+                                     (const void *)&RGBColorSpace::Rec2020,
+                                     sizeof(RGBColorSpace_Rec2020)));
+        CUDA_CHECK(hipMemcpyToSymbol((const void *)&RGBColorSpace_ACES2065_1,
+                                     (const void *)&RGBColorSpace::ACES2065_1,
+                                     sizeof(RGBColorSpace_ACES2065_1)));
     }
 #endif
 }

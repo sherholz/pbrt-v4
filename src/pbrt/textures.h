@@ -24,6 +24,10 @@
 #include <mutex>
 #include <string>
 
+#if defined(__CUDACC__) || defined(__HIPCC__)
+#include <hip/hip_runtime_api.h>
+#endif
+
 namespace pbrt {
 
 // TextureEvalContext Definition
@@ -624,11 +628,11 @@ class SpectrumImageTexture : public ImageTextureBase {
     SpectrumType spectrumType;
 };
 
-#if defined(PBRT_BUILD_GPU_RENDERER) && defined(__NVCC__)
+#if defined(PBRT_BUILD_GPU_RENDERER) && (defined(__NVCC__) || defined( __HIPCC__))
 class GPUSpectrumImageTexture {
   public:
     GPUSpectrumImageTexture(std::string filename, TextureMapping2D mapping,
-                            cudaTextureObject_t texObj, Float scale, bool invert,
+                            hipTextureObject_t texObj, Float scale, bool invert,
                             bool isSingleChannel, const RGBColorSpace *colorSpace,
                             SpectrumType spectrumType)
         : mapping(mapping),
@@ -684,7 +688,7 @@ class GPUSpectrumImageTexture {
 
     TextureMapping2D mapping;
     std::string filename;
-    cudaTextureObject_t texObj;
+    hipTextureObject_t texObj;
     Float scale;
     bool invert, isSingleChannel;
     const RGBColorSpace *colorSpace;
@@ -694,7 +698,7 @@ class GPUSpectrumImageTexture {
 class GPUFloatImageTexture {
   public:
     GPUFloatImageTexture(std::string filename, TextureMapping2D mapping,
-                         cudaTextureObject_t texObj, Float scale, bool invert)
+                         hipTextureObject_t texObj, Float scale, bool invert)
         : mapping(mapping),
           filename(filename),
           texObj(texObj),
@@ -727,12 +731,12 @@ class GPUFloatImageTexture {
 
     TextureMapping2D mapping;
     std::string filename;
-    cudaTextureObject_t texObj;
+    hipTextureObject_t texObj;
     Float scale;
     bool invert;
 };
 
-#else  // PBRT_BUILD_GPU_RENDERER && __NVCC__
+#else  // PBRT_BUILD_GPU_RENDERER && (__NVCC__ ||  __HIPCC__)
 
 class GPUSpectrumImageTexture {
   public:
@@ -769,7 +773,7 @@ class GPUFloatImageTexture {
     std::string ToString() const { return "GPUFloatImageTexture"; }
 };
 
-#endif  // PBRT_BUILD_GPU_RENDERER && __NVCC__
+#endif  // PBRT_BUILD_GPU_RENDERER && (__NVCC__ ||  __HIPCC__)
 
 // MarbleTexture Definition
 class MarbleTexture {

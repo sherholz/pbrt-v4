@@ -5,7 +5,7 @@
 #include <pbrt/pbrt.h>
 
 #include <pbrt/gpu/optix/aggregate.h>
-#include <pbrt/gpu/optix/optix.h>
+#include <pbrt/gpu/common.h>
 #include <pbrt/interaction.h>
 #include <pbrt/materials.h>
 #include <pbrt/media.h>
