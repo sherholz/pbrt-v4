@@ -14,7 +14,7 @@ namespace pbrt {
 PBRTOptions *Options;
 
 #if defined(PBRT_BUILD_GPU_RENDERER)
-__constant__ BasicPBRTOptions OptionsGPU;
+PBRT_GPU __constant__ BasicPBRTOptions OptionsGPU;
 
 void CopyOptionsToGPU() {
     CUDA_CHECK(cudaMemcpyToSymbol(OptionsGPU, Options, sizeof(OptionsGPU)));
