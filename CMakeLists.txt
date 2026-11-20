@@ -911,6 +911,8 @@ endif()
 
 target_compile_options(pbrt_lib PUBLIC ${PBRT_CXX_FLAGS})
 
+add_dependencies(pbrt_lib hiprt)
+
 if(PBRT_HIP_ENABLED)
   target_link_libraries(pbrt_lib PUBLIC hip::device)
   target_link_libraries(pbrt_lib PRIVATE pbrt_warnings pbrt_opt)

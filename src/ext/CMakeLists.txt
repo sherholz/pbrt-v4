@@ -55,6 +55,29 @@ set (ZLIB_INCLUDE_DIRS ${ZLIB_INCLUDE_DIRS} PARENT_SCOPE)
 set (ZLIB_LIBRARIES ${ZLIB_LIBARIES} PARENT_SCOPE)
 
 ###########################################################################
+# HIPRT
+
+if (PBRT_HIPRT AND HIP_PATH)
+  include(ExternalProject)
+  set(HIPRT_ARGS "")
+  set(HIPRT_ARGS ${HIPRT_ARGS}
+    -DBITCODE=ON
+    -DPRECOMPILE=ON
+    -DHIP_PATH=${HIP_PATH}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+  )
+
+  ExternalProject_Add(hiprt
+    PREFIX hiprt
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hiprt
+    CMAKE_ARGS
+      ${HIPRT_ARGS}
+    BUILD_ALWAYS OFF
+  )
+endif()
+
+
+###########################################################################
 # OpenEXR
 
 find_package (OpenEXR 2.3) # 2.3 is the first version compatible with C++17
