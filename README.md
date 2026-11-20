@@ -232,17 +232,13 @@ $ imgtool denoise-optix noisy.exr --outfile denoised.exr
 Instructions to build the HIP port
 --------
 
-HIPRT:
-* Download [HIPRT-v2.2](https://gpuopen.com/hiprt/)
-* Extract the zip file and copy files from `hiprt/` to `src/ext/hiprtSdk`
-
 Clone:
 * `git clone --recursive https://github.com/GPUOpen-Effects/pbrt-v4.git`
 * `git checkout hip`
 * `cd build`
 
 Linux:
-* `cmake -DCMAKE_C_COMPILER=/opt/rocm/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DPBRT_HIPRT=ON ..`
+* `cmake -DCMAKE_C_COMPILER=/opt/rocm/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DHIP_PATH=/opt/rocm -DPBRT_HIPRT=ON ..`
 * `make` or `make pbrt_exe`
 * `./hiprt.sh`
 

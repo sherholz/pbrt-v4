@@ -160,7 +160,7 @@ HiprtAggregate::HiprtAggregate(
     HIPRT_CHECK(hiprtCreateContext(HIPRT_API_VERSION, ctxInput, context));
 
 #ifdef NDEBUG
-    hiprtSetLogLevel(hiprtLogLevelError);
+    hiprtSetLogLevel(context, hiprtLogLevelError);
 #endif
     LOG_VERBOSE("HIPRT version %d.%d.%x successfully initialized", HIPRT_MAJOR_VERSION,
                 HIPRT_MINOR_VERSION, HIPRT_PATCH_VERSION);
