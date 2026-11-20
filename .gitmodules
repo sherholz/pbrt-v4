@@ -36,3 +36,7 @@
 [submodule "src/ext/zlib"]
 	path = src/ext/zlib
 	url = https://github.com/madler/zlib.git
+
+[submodule "src/ext/hiprt"]
+	path = src/ext/hiprt
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/HIPRT.git
