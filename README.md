@@ -238,7 +238,7 @@ Clone:
 * `cd build`
 
 Linux:
-* `cmake -DCMAKE_C_COMPILER=/opt/rocm/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DHIP_PATH=/opt/rocm -DPBRT_HIPRT=ON ..`
+* `cmake -DCMAKE_C_COMPILER=/opt/rocm/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_INSTALL_PREFIX=../install -DHIP_PATH=/opt/rocm -DPBRT_HIPRT=ON ..`
 * `make` or `make pbrt_exe`
 * `./hiprt.sh`
 
