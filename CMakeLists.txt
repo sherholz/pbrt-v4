@@ -199,7 +199,12 @@ if(PBRT_HIPRT)
   # HIPRT is built in its submodule (see README.md); the build generates hiprt/hiprt.h
   # there and puts the library, kernels, and bitcode into dist/bin/Release
   set(PBRT_HIPRT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/ext/hiprt")
-  set(PBRT_HIPRT_BINARY_PATH ${PBRT_HIPRT_PATH}/dist/bin/Release)
+  if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(PBRT_HIPRT_BINARY_PATH ${PBRT_HIPRT_PATH}/dist/bin/Release)
+  endif()
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(PBRT_HIPRT_BINARY_PATH ${PBRT_HIPRT_PATH}/dist/bin/Debug)
+  endif()
   if(NOT EXISTS ${PBRT_HIPRT_PATH}/version.txt)
     message(FATAL_ERROR "The HIPRT submodule is missing. Run:\n" "  \"git submodule update --init src/ext/hiprt\"")
   endif()
@@ -218,13 +223,13 @@ if(PBRT_HIPRT)
   endif()
   # Device library the HIPRT kernels are linked with; its name includes the HIP SDK
   # version, so it is copied under a fixed name for hiprt.bat/hiprt.sh
-  file(GLOB PBRT_HIPRT_BITCODE ${PBRT_HIPRT_BINARY_PATH}/hiprt${PBRT_HIPRT_VERSION}_*_amd_lib_${PBRT_HIPRT_OS}.bc)
-  list(LENGTH PBRT_HIPRT_BITCODE PBRT_HIPRT_BITCODE_COUNT)
-  if(NOT EXISTS ${PBRT_HIPRT_PATH}/hiprt/hiprt.h OR NOT PBRT_HIPRT_BITCODE_COUNT EQUAL 1)
-    message(FATAL_ERROR "Expected exactly one HIPRT ${PBRT_HIPRT_VERSION_MAJOR}.${PBRT_HIPRT_VERSION_MINOR} build with bitcode in ${PBRT_HIPRT_BINARY_PATH}. "
-                        "Build HIPRT first, see \"Instructions to build the HIP port\" in README.md.")
-  endif()
-  configure_file(${PBRT_HIPRT_BITCODE} ${CMAKE_CURRENT_BINARY_DIR}/hiprt_amd_lib.bc COPYONLY)
+  #file(GLOB PBRT_HIPRT_BITCODE ${PBRT_HIPRT_BINARY_PATH}/hiprt${PBRT_HIPRT_VERSION}_*_amd_lib_${PBRT_HIPRT_OS}.bc)
+  #list(LENGTH PBRT_HIPRT_BITCODE PBRT_HIPRT_BITCODE_COUNT)
+  #if(NOT EXISTS ${PBRT_HIPRT_PATH}/hiprt/hiprt.h OR NOT PBRT_HIPRT_BITCODE_COUNT EQUAL 1)
+  #  message(FATAL_ERROR "Expected exactly one HIPRT ${PBRT_HIPRT_VERSION_MAJOR}.${PBRT_HIPRT_VERSION_MINOR} build with bitcode in ${PBRT_HIPRT_BINARY_PATH}. "
+  #                      "Build HIPRT first, see \"Instructions to build the HIP port\" in README.md.")
+  #endif()
+  #configure_file(${PBRT_HIPRT_BITCODE} ${CMAKE_CURRENT_BINARY_DIR}/hiprt_amd_lib.bc COPYONLY)
   link_directories(${PBRT_HIPRT_BINARY_PATH})
   include_directories(${PBRT_HIPRT_PATH})
   list(APPEND PBRT_DEFINITIONS "PBRT_BUILD_GPU_RENDERER")
@@ -993,7 +998,14 @@ if(PBRT_HIP_ENABLED)
     configure_file(scripts/hiprt.sh.in ${CMAKE_CURRENT_BINARY_DIR}/hiprt.sh @ONLY)
   endif()
 
-  list(APPEND ALL_PBRT_LIBS "hiprt${PBRT_HIPRT_VERSION}64")
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+      list(APPEND ALL_PBRT_LIBS "hiprt${PBRT_HIPRT_VERSION}64D")
+  endif()
+      
+  if (CMAKE_BUILD_TYPE STREQUAL "Release")
+      list(APPEND ALL_PBRT_LIBS "hiprt${PBRT_HIPRT_VERSION}64")
+  endif()
+
   if(CMAKE_SYSTEM_NAME STREQUAL Windows)
     add_custom_target(
         libdeflate_msvc_patch
@@ -1014,6 +1026,7 @@ if(PBRT_HIP_ENABLED)
       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/hiprt.sh
       COMMENT "Compiling HIP-RT kernels...")
   endif()
+  add_dependencies(pbrt_lib hiprt)
 endif()
 
 if(WIN32)
