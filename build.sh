@@ -1,14 +1,14 @@
-#BUILD_TYPE=Release
-BUILD_TYPE=Debug
-#HIP_PATH=/opt/rocm
-#C_COMPILER=/opt/rocm/llvm/bin/clang
-#CXX_COMPILER=/opt/rocm/llvm/bin/clang++
-#ROCM_VERSION=7.17
+BUILD_TYPE=Release
+#BUILD_TYPE=Debug
+HIP_PATH=/opt/rocm
+C_COMPILER=/opt/rocm/llvm/bin/clang
+CXX_COMPILER=/opt/rocm/llvm/bin/clang++
+ROCM_VERSION=7.17
 
-HIP_PATH=/usr
-C_COMPILER=/usr/bin/clang
-CXX_COMPILER=/usr/bin/clang++
-ROCM_VERSION=7.1
+#HIP_PATH=/usr
+#C_COMPILER=/usr/bin/clang
+#CXX_COMPILER=/usr/bin/clang++
+#ROCM_VERSION=7.1
 
 rm -rdf install
 ###################################
