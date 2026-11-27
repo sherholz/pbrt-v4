@@ -319,7 +319,7 @@ class CUDAOutputBuffer {
     void Unmap();
 
   private:
-    void setStream(hipStream_t stream) { m_stream = stream; }
+    void setStream(cudaStream_t stream) { m_stream = stream; }
     // Allocate or update device pointer as necessary for CUDA access
     void makeCurrent() { CUDA_CHECK(hipSetDevice(m_device_idx)); }
 
@@ -336,9 +336,9 @@ class CUDAOutputBuffer {
     PIXEL_FORMAT *m_host_pixels = nullptr;
 
     bool readbackActive = false;
-    hipEvent_t readbackFinishedEvent;
+    cudaEvent_t readbackFinishedEvent;
 
-    hipStream_t m_stream = 0u;
+    cudaStream_t m_stream = 0u;
     int32_t m_device_idx = 0;
 
     BufferDisplay *display = nullptr;
@@ -378,7 +378,7 @@ CUDAOutputBuffer<PIXEL_FORMAT>::CUDAOutputBuffer(int32_t width, int32_t height) 
     uint32_t num_gl_devices = 0;
 
     hipDevice_t glDevice = -1;
-    hipError_t glDevErr =
+    cudaError_t glDevErr =
         hipGLGetDevices(&num_gl_devices, &glDevice, 1, hipGLDeviceListAll);
     if (glDevErr != hipSuccess || num_gl_devices == 0)
         LOG_FATAL("hipGLGetDevices failed (%s): no HIP device found for the current "

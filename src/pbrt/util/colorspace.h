@@ -14,9 +14,9 @@
 
 #include <string>
 
-#ifdef __HIP_PLATFORM_NVIDIA__
-#include <cuda_runtime.h>
-#endif
+//#ifdef __HIP_PLATFORM_NVIDIA__
+//#include <cuda_runtime.h>
+//#endif
 
 namespace pbrt {
 

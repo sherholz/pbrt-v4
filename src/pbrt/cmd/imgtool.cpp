@@ -2255,7 +2255,7 @@ int denoise_optix(std::vector<std::string> args) {
     ImageAndMetadata im = Image::Read(inFilename);
     Image &image = im.image;
 
-    CUDA_CHECK(hipFree(nullptr));
+    CUDA_CHECK(cudaFree(nullptr));
 
     int nLayers = 3;
     bool oldNormalNaming = false;
@@ -2292,7 +2292,7 @@ int denoise_optix(std::vector<std::string> args) {
 
     auto copyChannelsToGPU = [&](std::array<std::string, 3> ch, bool flipZ = false) {
         void *bufGPU;
-        CUDA_CHECK(hipMalloc(&bufGPU, imageBytes));
+        CUDA_CHECK(cudaMalloc(&bufGPU, imageBytes));
         std::vector<float> hostStaging(imageBytes / sizeof(float));
 
         ImageChannelDesc desc = image.GetChannelDesc(ch);
@@ -2307,7 +2307,7 @@ int denoise_optix(std::vector<std::string> args) {
                     hostStaging[offset++] = v[c];
             }
         CUDA_CHECK(
-            hipMemcpy(bufGPU, hostStaging.data(), imageBytes, hipMemcpyHostToDevice));
+            cudaMemcpy(bufGPU, hostStaging.data(), imageBytes, cudaMemcpyHostToDevice));
         return bufGPU;
     };
     RGB *rgbGPU = (RGB *)copyChannelsToGPU({"R", "G", "B"});
@@ -2323,15 +2323,15 @@ int denoise_optix(std::vector<std::string> args) {
     }
 
     RGB *rgbResultGPU;
-    CUDA_CHECK(hipMalloc(&rgbResultGPU, imageBytes));
+    CUDA_CHECK(cudaMalloc(&rgbResultGPU, imageBytes));
 
     denoiser.Denoise(rgbGPU, normalGPU, albedoGPU, rgbResultGPU);
 
-    CUDA_CHECK(hipDeviceSynchronize());
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     Image result(PixelFormat::Float, image.Resolution(), {"R", "G", "B"});
-    CUDA_CHECK(hipMemcpy(result.RawPointer({0, 0}), (const void *)rgbResultGPU,
-                          imageBytes, hipMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(result.RawPointer({0, 0}), (const void *)rgbResultGPU,
+                          imageBytes, cudaMemcpyDeviceToHost));
 
     ImageMetadata outMetadata;
     outMetadata.cameraFromWorld = im.metadata.cameraFromWorld;
@@ -2370,7 +2370,7 @@ int scale_optix(std::vector<std::string> args) {
     ImageAndMetadata im = Image::Read(inFilename);
     Image &image = im.image;
 
-    CUDA_CHECK(hipFree(nullptr));
+    CUDA_CHECK(cudaFree(nullptr));
 
     int nLayers = 3;
     bool oldNormalNaming = false;
@@ -2407,7 +2407,7 @@ int scale_optix(std::vector<std::string> args) {
 
     auto copyChannelsToGPU = [&](std::array<std::string, 3> ch, bool flipZ = false) {
         void *bufGPU;
-        CUDA_CHECK(hipMalloc(&bufGPU, imageBytes));
+        CUDA_CHECK(cudaMalloc(&bufGPU, imageBytes));
         std::vector<float> hostStaging(imageBytes / sizeof(float));
 
         ImageChannelDesc desc = image.GetChannelDesc(ch);
@@ -2422,7 +2422,7 @@ int scale_optix(std::vector<std::string> args) {
                     hostStaging[offset++] = v[c];
             }
         CUDA_CHECK(
-            hipMemcpy(bufGPU, hostStaging.data(), imageBytes, hipMemcpyHostToDevice));
+            cudaMemcpy(bufGPU, hostStaging.data(), imageBytes, cudaMemcpyHostToDevice));
         return bufGPU;
     };
     RGB *rgbGPU = (RGB *)copyChannelsToGPU({"R", "G", "B"});
@@ -2440,15 +2440,15 @@ int scale_optix(std::vector<std::string> args) {
     RGB *rgbResultGPU;
     Point2i destRes(image.Resolution().x * 2, image.Resolution().y * 2);
     size_t destBytes = 3 * destRes.x * destRes.y * sizeof(float);
-    CUDA_CHECK(hipMalloc(&rgbResultGPU, destBytes));
+    CUDA_CHECK(cudaMalloc(&rgbResultGPU, destBytes));
 
     scaler.Scale(rgbGPU, normalGPU, albedoGPU, rgbResultGPU);
 
-    CUDA_CHECK(hipDeviceSynchronize());
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     Image result(PixelFormat::Float, destRes, {"R", "G", "B"});
-    CUDA_CHECK(hipMemcpy(result.RawPointer({0, 0}), (const void *)rgbResultGPU,
-                          destBytes, hipMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(result.RawPointer({0, 0}), (const void *)rgbResultGPU,
+                          destBytes, cudaMemcpyDeviceToHost));
 
     ImageMetadata outMetadata;
     outMetadata.cameraFromWorld = im.metadata.cameraFromWorld;

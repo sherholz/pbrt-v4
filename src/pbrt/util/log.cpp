@@ -15,6 +15,10 @@
 #include <pbrt/util/parallel.h>
 #include <pbrt/util/string.h>
 
+#if defined(__HIPCC__)
+#include <pbrt/util/hip_aliases.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
@@ -122,7 +126,7 @@ void InitLogging(LogLevel level, std::string logFile, bool logUtilization, bool 
 
 #ifdef PBRT_BUILD_GPU_RENDERER
     if (useGPU) {
-        CUDA_CHECK(hipMemcpyToSymbol((const void *)&LOGGING_LogLevelGPU,
+        CUDA_CHECK(cudaMemcpyToSymbol((const void *)&LOGGING_LogLevelGPU,
                                      (const void *)&logging::logLevel,
                                      sizeof(logging::logLevel)));
     }
@@ -292,15 +296,15 @@ void ShutdownLogging() {
 
 #ifdef PBRT_BUILD_GPU_RENDERER
 std::vector<GPULogItem> ReadGPULogs() {
-    CUDA_CHECK(hipDeviceSynchronize());
+    CUDA_CHECK(cudaDeviceSynchronize());
     int nItems;
-    CUDA_CHECK(hipMemcpyFromSymbol((void *)&nItems, (const void *)&nRawLogItems,
+    CUDA_CHECK(cudaMemcpyFromSymbol((void *)&nItems, (const void *)&nRawLogItems,
                                    sizeof(nItems)));
     nItems = std::min(nItems, MAX_LOG_ITEMS);
     std::vector<GPULogItem> items(nItems);
-    CUDA_CHECK(hipMemcpyFromSymbol((void *)items.data(), (const void *)&rawLogItems,
+    CUDA_CHECK(cudaMemcpyFromSymbol((void *)items.data(), (const void *)&rawLogItems,
                                     nItems * sizeof(GPULogItem), 0,
-                                    hipMemcpyDeviceToHost));
+                                    cudaMemcpyDeviceToHost));
 
     return items;
 }

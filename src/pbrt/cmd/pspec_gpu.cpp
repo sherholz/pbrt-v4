@@ -16,8 +16,14 @@
 #include <pbrt/util/image.h>
 #include <pbrt/util/vecmath.h>
 
-#include <hip/hip_runtime.h>
-#include <hip/hip_runtime_api.h>
+#if defined(__CUDACC__)
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#elif defined(__HIPCC__)
+#include <pbrt/util/hip_aliases.h>
+#endif
+
+#include <pbrt/util/hip_aliases.h>
 
 #include <vector>
 
@@ -25,8 +31,8 @@ namespace pbrt {
 
 struct Buffer {
     bool used = false;
-    hipEvent_t finishedEvent;
-    hipDeviceptr_t ptr = 0;
+    cudaEvent_t finishedEvent;
+    CUdeviceptr ptr = 0;
     void *hostPtr = nullptr;
 };
 
@@ -40,15 +46,15 @@ void UPSInit(int nPoints) {
         void *ptr;
         size_t sz = nPoints * sizeof(Point2f);
         // GPU-side memory for sample points
-        CUDA_CHECK(hipMalloc(&ptr, sz));
-        b.ptr = (hipDeviceptr_t)ptr;
+        CUDA_CHECK(cudaMalloc(&ptr, sz));
+        b.ptr = (CUdeviceptr)ptr;
 
         // Event to keep track of when the buffer has been processed on the
         // GPU.
-        CUDA_CHECK(hipEventCreate(&b.finishedEvent));
+        CUDA_CHECK(cudaEventCreate(&b.finishedEvent));
 
         // Host-side staging buffer for async memcpy in pinned host memory.
-        CUDA_CHECK(hipHostMalloc(&b.hostPtr, sz));
+        CUDA_CHECK(cudaMallocHost(&b.hostPtr, sz));
     }
 }
 
@@ -61,12 +67,12 @@ void UpdatePowerSpectrum(const std::vector<Point2f> &points, Image *pspec) {
     else
         // If it's been used previously, make sure that the kernel that
         // consumed it has completed.
-        CUDA_CHECK(hipEventSynchronize(b.finishedEvent));
+        CUDA_CHECK(cudaEventSynchronize(b.finishedEvent));
 
     // Copy the sample points to host-side pinned memory
     memcpy(b.hostPtr, points.data(), points.size() * sizeof(Point2f));
-    CUDA_CHECK(hipMemcpyAsync((void *)b.ptr, b.hostPtr, points.size() * sizeof(Point2f),
-                               hipMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpyAsync((void *)b.ptr, b.hostPtr, points.size() * sizeof(Point2f),
+                               cudaMemcpyHostToDevice));
 
     int nPoints = points.size();
 
@@ -90,7 +96,7 @@ void UpdatePowerSpectrum(const std::vector<Point2f> &points, Image *pspec) {
                    });
 
     // Indicate that the buffer has been consumed and is safe for reuse.
-    CUDA_CHECK(hipEventRecord(b.finishedEvent));
+    CUDA_CHECK(cudaEventRecord(b.finishedEvent));
 }
 
 }  // namespace pbrt

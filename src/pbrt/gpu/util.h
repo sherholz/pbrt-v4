@@ -18,8 +18,12 @@
 #include <utility>
 #include <vector>
 
-#include <hip/hip_runtime.h>
-#include <hip/hip_runtime_api.h>
+#if defined(__CUDACC__)
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#elif defined(__HIPCC__)
+#include <pbrt/util/hip_aliases.h>
+#endif
 
 #ifdef NVTX
 #ifdef UNICODE
@@ -33,14 +37,14 @@
 #endif
 
 #define CUDA_CHECK(EXPR)                                        \
-    if (EXPR != hipSuccess) {                                   \
-        hipError_t error = hipGetLastError();                   \
-        LOG_FATAL("CUDA error: %s", hipGetErrorString(error));  \
+    if (EXPR != cudaSuccess) {                                  \
+        cudaError_t error = cudaGetLastError();                 \
+        LOG_FATAL("CUDA error: %s", cudaGetErrorString(error)); \
     } else /* eat semicolon */
 
 namespace pbrt {
 
-std::pair<hipEvent_t, hipEvent_t> GetProfilerEvents(const char *description);
+std::pair<cudaEvent_t, cudaEvent_t> GetProfilerEvents(const char *description);
 
 template <typename F>
 inline int GetBlockSize(const char *description, F kernel) {
@@ -56,7 +60,7 @@ inline int GetBlockSize(const char *description, F kernel) {
     int minGridSize, blockSize;
     blockSize = 64;
     //CUDA_CHECK(
-    //    hipOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, kernel, 0, 0));
+    //    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, kernel, 0, 0));
     kernelBlockSizes[index] = blockSize;
     LOG_VERBOSE("[%s]: block size %d", description, blockSize);
 
@@ -85,18 +89,18 @@ void GPUParallelFor(const char *description, int nItems, F func) {
     auto kernel = &Kernel<F>;
 
     int blockSize = GetBlockSize(description, kernel);
-    std::pair<hipEvent_t, hipEvent_t> events = GetProfilerEvents(description);
+    std::pair<cudaEvent_t, cudaEvent_t> events = GetProfilerEvents(description);
 
 #ifdef PBRT_DEBUG_BUILD
     LOG_VERBOSE("Launching %s", description);
 #endif
-    hipEventRecord(events.first);
+    cudaEventRecord(events.first);
     int gridSize = (nItems + blockSize - 1) / blockSize;
     kernel<<<gridSize, blockSize>>>(func, nItems);
-    hipEventRecord(events.second);
+    cudaEventRecord(events.second);
 
 #ifdef PBRT_DEBUG_BUILD
-    CUDA_CHECK(hipDeviceSynchronize());
+    CUDA_CHECK(cudaDeviceSynchronize());
     LOG_VERBOSE("Post-sync %s", description);
 #endif
 #ifdef NVTX
@@ -117,7 +121,7 @@ void GPUThreadInit();
 void GPUMemset(void *ptr, int byte, size_t bytes);
 
 void GPURegisterThread(const char *name);
-void GPUNameStream(hipStream_t stream, const char *name);
+void GPUNameStream(cudaStream_t stream, const char *name);
 
 }  // namespace pbrt
 

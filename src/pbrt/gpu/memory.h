@@ -50,6 +50,7 @@ class CUDATrackedMemoryResource : public CUDAMemoryResource {
     std::atomic<size_t> bytesAllocated{};
     std::unordered_map<void *, size_t> allocations;
 };
+
 #endif
 
 }  // namespace pbrt
