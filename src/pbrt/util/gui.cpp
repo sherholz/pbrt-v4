@@ -195,6 +195,14 @@ void GUI::mouseButtonCallback(GLFWwindow* window, int button, int action, int mo
 }
 
 void GUI::Initialize() {
+#if defined(PBRT_BUILD_GPU_RENDERER) && defined(__HIP_PLATFORM_AMD__)
+    // HIP/OpenGL interop on AMD (hipGLGetDevices, hipGraphicsGLRegisterBuffer)
+    // only works with GLX contexts; with GLFW >= 3.4 a Wayland session would
+    // otherwise get an EGL context and interop fails with "invalid argument".
+    // Prefer X11 (XWayland) when it is available.
+    if (glfwPlatformSupported(GLFW_PLATFORM_X11))
+        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+#endif
     if (!glfwInit())
         LOG_FATAL("Unable to initialize GLFW");
 }

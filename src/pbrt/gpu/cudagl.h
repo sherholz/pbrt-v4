@@ -377,8 +377,14 @@ CUDAOutputBuffer<PIXEL_FORMAT>::CUDAOutputBuffer(int32_t width, int32_t height) 
 #else
     uint32_t num_gl_devices = 0;
 
-    hipDevice_t glDevice;
-    hipGLGetDevices(&num_gl_devices, &glDevice, 1, hipGLDeviceListAll);
+    hipDevice_t glDevice = -1;
+    hipError_t glDevErr =
+        hipGLGetDevices(&num_gl_devices, &glDevice, 1, hipGLDeviceListAll);
+    if (glDevErr != hipSuccess || num_gl_devices == 0)
+        LOG_FATAL("hipGLGetDevices failed (%s): no HIP device found for the current "
+                  "OpenGL context. HIP/GL interop requires a GLX context on the "
+                  "same GPU as the HIP device.",
+                  hipGetErrorString(glDevErr));
 
     if(glDevice != (hipDevice_t)current_device)
         LOG_FATAL("HIP Multi-GPU not supported with GL interop yet");
