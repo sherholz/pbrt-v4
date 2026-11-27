@@ -21,6 +21,17 @@
 
 #ifndef PBRT_IS_GPU_CODE
 // Work around conflict with "half".
+#ifdef __HIP__
+// Imath's half.h does not define the global "half" alias under HIP, since
+// amd_hip_fp16.h already defines its own. OpenEXR's headers use an unqualified
+// "half" for Imath::half, so declare it in the OpenEXR namespace, where it
+// takes precedence over the global HIP type.
+#include <ImfNamespace.h>
+#include <half.h>
+OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_ENTER
+using half = IMATH_NAMESPACE::half;
+OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_EXIT
+#endif
 #include <ImfChannelList.h>
 #include <ImfChromaticitiesAttribute.h>
 #include <ImfFloatAttribute.h>
